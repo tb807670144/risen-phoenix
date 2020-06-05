@@ -2,16 +2,18 @@ package com.risen.phoenix.util.pojo;
 
 public class Student {
 
+    private Integer id;
+    private String name;
+    private String userType;
+
     public Student() {
     }
 
-    public Student(Integer id, String name) {
+    public Student(Integer id, String name, String userType) {
         this.id = id;
         this.name = name;
+        this.userType = userType;
     }
-
-    private Integer id;
-    private String name;
 
     public Integer getId() {
         return id;
@@ -27,5 +29,13 @@ public class Student {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getUserType() {
+        return userType;
+    }
+
+    public void setUserType(String userType) {
+        this.userType = userType;
     }
 }
