@@ -40,6 +40,30 @@ public class CreatePhoenix {
         this.fields = fields;
     }
 
+    public String getSchem() {
+        return schem;
+    }
+
+    public void setSchem(String schem) {
+        this.schem = schem;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
+    public List<PhoenixField> getFields() {
+        return fields;
+    }
+
+    public void setFields(List<PhoenixField> fields) {
+        this.fields = fields;
+    }
+
     /**
      * 构建建表语句
      */

@@ -27,6 +27,27 @@ public class PhoenixField {
      */
     private boolean primaryKey;
 
+    public PhoenixField() {
+    }
+
+    public PhoenixField(String fieldName, String fieldType) {
+        this.fieldName = fieldName;
+        this.fieldType = fieldType;
+    }
+
+    public PhoenixField(String fieldName, String fieldType, boolean canNull, boolean primaryKey) {
+        this.fieldName = fieldName;
+        this.fieldType = fieldType;
+        this.canNull = canNull;
+        this.primaryKey = primaryKey;
+    }
+
+    public PhoenixField(String fieldName, String fieldType, boolean primaryKey) {
+        this.fieldName = fieldName;
+        this.fieldType = fieldType;
+        this.primaryKey = primaryKey;
+    }
+
     public String getFieldName() {
         return toLowerCamel(fieldName).toUpperCase();
     }
