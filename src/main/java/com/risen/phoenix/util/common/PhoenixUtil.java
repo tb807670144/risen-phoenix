@@ -10,13 +10,15 @@ import org.junit.Assert;
 import java.lang.reflect.Field;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PhoenixUtil<T> {
 
-    private Connection connection;
-    private Statement statement;
-    private ResultSet resultSet;
+    private static Connection connection;
+    private static Statement statement;
+    private  ResultSet resultSet;
 
     private static final String DRIVER_CLASS = "org.apache.phoenix.jdbc.PhoenixDriver";
     private static final String URL = "jdbc:phoenix:bigdata:6581";
@@ -33,11 +35,21 @@ public class PhoenixUtil<T> {
     // 获取连接
     private void getConnection() {
         // 配置系统变量
-//       System.setProperty("hadoop.home.dir", "E:/winutils-master/hadoop-2.7.1");
+        System.setProperty("hadoop.home.dir", "D:/winutils-master/hadoop-2.7.1");
+        System.setProperty("HADOOP_HOME", "D:/winutils-master/hadoop-2.7.1");
         try {
             connection = DriverManager.getConnection(URL);
             connection.setAutoCommit(true);
             statement = connection.createStatement();
+            //dosomthing
+            List<Object> list = executeQuery(Student.class);
+            System.out.println("查询成功！！！" + list.size());
+            for (Object o : list) {
+                Student student = (Student) o;
+                System.out.println(student.toString());
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         } catch (SQLException e) {
             e.printStackTrace();
         } catch (Exception e){
@@ -152,42 +164,53 @@ public class PhoenixUtil<T> {
 //        String insert = "upsert into TEST.STUDENT values(4,'小狗')";
         return select;
     }
+    /**
+     * 获取Phoenix中的表(系统表除外)
+     */
+    public static List<String> getTables() throws Exception {
+        List<String> tables = new ArrayList<>();
+        DatabaseMetaData metaData = connection.getMetaData();
+        String[] types = {"TABLE"}; //"SYSTEM TABLE"
+        ResultSet resultSet = metaData.getTables(null, null, null, types);
+        while (resultSet.next()) {
+            tables.add(resultSet.getString("TABLE_NAME"));
+        }
+        return tables;
+    }
+
+    /**
+     * 获取表中的所有数据
+     */
+    public List<Map<String, String>> getList(String tableName) throws Exception {
+        String sql = "SELECT * FROM " + tableName;
+//        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        ResultSet resultSet = statement.executeQuery(sql);
+        ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+        List<Map<String, String>> resultList = new ArrayList<>();
+        while (resultSet.next()) {
+            Map<String, String> result = new HashMap<>();
+            for (int i = 1, len = resultSetMetaData.getColumnCount(); i <= len; i++) {
+                result.put(resultSetMetaData.getColumnName(i), resultSet.getString(i));
+            }
+            resultList.add(result);
+        }
+        return resultList;
+    }
+    /**
+     * 新增数据
+     */
+    public static boolean saveData() throws Exception {
+        String sql = "upsert into TEST.TOKOYHOT(ID,NAME,AGE) values(3,'波多野结衣','18')";
+//        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        return statement.execute(sql);
+    }
 
     public static void main(String[] args) throws Exception {
-//-----------------------------------------------------------------
-        List<PhoenixField> list = new ArrayList<>();
-        PhoenixField phoenixField1 = new PhoenixField("demoUuid", DbColumType.getPhoenixType("java.lang.Integer"), true);
-        PhoenixField phoenixField2 = new PhoenixField("demoName", DbColumType.getPhoenixType("java.lang.String"));
-        PhoenixField phoenixField3 = new PhoenixField("demoType", DbColumType.getPhoenixType("java.lang.Double"));
 
-        list.add(phoenixField1);
-        list.add(phoenixField2);
-        list.add(phoenixField3);
-
-        CreatePhoenix createPhoenix = new CreatePhoenix("DDW", list);
-        String s = JSONObject.toJSONString(createPhoenix);
-        System.out.println(s);
-//-------------------------美丽分割线----------------------------------
-        System.out.println(createPhoenix.buildCreateSQL());
-
-//-----------------------------------------------------------------
-
-        /*PhoenixUtil<Demo01> studentPhoenixUtil = new PhoenixUtil<>();
-        studentPhoenixUtil.getConnection();
-
-        String table = studentPhoenixUtil.createTable(Student.class);
-        System.out.println("构建完毕SQL:  ");
-        System.out.println(table);
-//        studentPhoenixUtil.execute(table);
-//        studentPhoenixUtil.executeQuery();
-
-
-
-        studentPhoenixUtil.closeResource();
-*/
-//        String xiaoMiUtil = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, "xiaoMiVeryGood");
-
-
+        PhoenixUtil phoenixUtil = new PhoenixUtil();
+        phoenixUtil.getConnection();
+        System.out.println(saveData());
+        phoenixUtil.closeResource();
     }
 
 }
