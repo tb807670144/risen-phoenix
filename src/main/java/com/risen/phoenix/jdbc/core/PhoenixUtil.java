@@ -1,12 +1,12 @@
-package com.risen.phoenix.util.common;
+/*
+package com.risen.phoenix.jdbc.core;
 
 import com.alibaba.fastjson.JSONObject;
-import com.risen.phoenix.util.common.table.CreatePhoenix;
-import com.risen.phoenix.util.common.table.PhoenixField;
-import com.risen.phoenix.util.pojo.Demo01;
-import com.risen.phoenix.util.pojo.Student;
+import com.risen.phoenix.jdbc.table.PhoenixTable;
 import org.junit.Assert;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.sql.DataSource;
 import java.lang.reflect.Field;
 import java.sql.*;
 import java.util.ArrayList;
@@ -14,8 +14,18 @@ import java.util.List;
 
 public class PhoenixUtil<T> {
 
+    @Autowired
+    DataSource dataSource;
+    public DataSource getDataSource() {
+        return dataSource;
+    }
+
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
     private Connection connection;
-    private Statement statement;
+        private Statement statement;
     private ResultSet resultSet;
 
     private static final String DRIVER_CLASS = "org.apache.phoenix.jdbc.PhoenixDriver";
@@ -45,9 +55,11 @@ public class PhoenixUtil<T> {
         }
     }
 
-    /**
+    */
+/**
      * 关闭资源连接
-     */
+     *//*
+
     private void closeResource(){
         try {
             if (resultSet != null){
@@ -68,10 +80,12 @@ public class PhoenixUtil<T> {
         }
     }
 
-    /**
+    */
+/**
      * 支持简单的直接将对象插入Hbase
      * @param clazz
-     */
+     *//*
+
     public List<Object> executeQuery(Class<T> clazz) throws Exception{
         List<Object> list = new ArrayList<>();
         String sql = getSql();
@@ -96,22 +110,24 @@ public class PhoenixUtil<T> {
     }
 
 
-    /**
+    */
+/**
      * 执行JSON格式
      * @param json
-     */
+     *//*
+
     public List<Object> executeQuery(String json) throws Exception{
-        CreatePhoenix createPhoenix = JSONObject.parseObject(json, CreatePhoenix.class);
+        PhoenixTable phoenixTable = JSONObject.parseObject(json, PhoenixTable.class);
         JSONObject jsonObj = JSONObject.parseObject(json);
-        Assert.assertNotNull(createPhoenix.getTableName());
-        Assert.assertNotNull(createPhoenix.getFields());
+        Assert.assertNotNull(phoenixTable.getTableName());
+        Assert.assertNotNull(phoenixTable.getFields());
         if (!jsonObj.containsKey("tableName")){
             throw new RuntimeException("json必须包含tableName");
         }
         if (!jsonObj.containsKey("fields")){
             throw new RuntimeException("json必须包含fields属性字段信息");
         }
-        String sql = createPhoenix.buildCreateSQL();
+        String sql = phoenixTable.buildCreateSQL();
         List<Object> list = new ArrayList<>();
         resultSet = statement.executeQuery(sql);
         while (resultSet.next()){
@@ -127,10 +143,12 @@ public class PhoenixUtil<T> {
     }
 
 
-    /**
+    */
+/**
      * 根据类进行创建表
      * 规则：
-     */
+     *//*
+
     public String createTable(Class<?> clazz){
         List<PhoenixField> list = new ArrayList<>();
 
@@ -138,12 +156,12 @@ public class PhoenixUtil<T> {
         for (Field field : fields) {
             PhoenixField field1 = new PhoenixField();
             field1.setFieldName(field.getName());
-            field1.setFieldType(DbColumType.getPhoenixType(field.getType().getName()));
+            field1.setFieldType(EnumPhoenixDataType.getPhoenixType(field.getType().getName()));
 
             list.add(field1);
         }
-        CreatePhoenix createPhoenix = new CreatePhoenix(clazz.getSimpleName(), list);
-        return createPhoenix.buildCreateSQL();
+        PhoenixTable phoenixTable = new PhoenixTable(clazz.getSimpleName(), list);
+        return phoenixTable.buildCreateSQL();
     }
 
     public String getSql(){
@@ -156,23 +174,24 @@ public class PhoenixUtil<T> {
     public static void main(String[] args) throws Exception {
 //-----------------------------------------------------------------
         List<PhoenixField> list = new ArrayList<>();
-        PhoenixField phoenixField1 = new PhoenixField("demoUuid", DbColumType.getPhoenixType("java.lang.Integer"), true);
-        PhoenixField phoenixField2 = new PhoenixField("demoName", DbColumType.getPhoenixType("java.lang.String"));
-        PhoenixField phoenixField3 = new PhoenixField("demoType", DbColumType.getPhoenixType("java.lang.Double"));
+        PhoenixField phoenixField1 = new PhoenixField("demoUuid", EnumPhoenixDataType.getPhoenixType("java.lang.Integer"), true);
+        PhoenixField phoenixField2 = new PhoenixField("demoName", EnumPhoenixDataType.getPhoenixType("java.lang.String"));
+        PhoenixField phoenixField3 = new PhoenixField("demoType", EnumPhoenixDataType.getPhoenixType("java.lang.Double"));
 
         list.add(phoenixField1);
         list.add(phoenixField2);
         list.add(phoenixField3);
 
-        CreatePhoenix createPhoenix = new CreatePhoenix("DDW", list);
-        String s = JSONObject.toJSONString(createPhoenix);
+        PhoenixTable phoenixTable = new PhoenixTable("DDW", list);
+        String s = JSONObject.toJSONString(phoenixTable);
         System.out.println(s);
 //-------------------------美丽分割线----------------------------------
-        System.out.println(createPhoenix.buildCreateSQL());
+        System.out.println(phoenixTable.buildCreateSQL());
 
 //-----------------------------------------------------------------
 
-        /*PhoenixUtil<Demo01> studentPhoenixUtil = new PhoenixUtil<>();
+        */
+/*PhoenixUtil<Demo01> studentPhoenixUtil = new PhoenixUtil<>();
         studentPhoenixUtil.getConnection();
 
         String table = studentPhoenixUtil.createTable(Student.class);
@@ -184,10 +203,12 @@ public class PhoenixUtil<T> {
 
 
         studentPhoenixUtil.closeResource();
-*/
+*//*
+
 //        String xiaoMiUtil = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, "xiaoMiVeryGood");
 
 
     }
 
 }
+*/
