@@ -1,6 +1,6 @@
 package com.risen.phoenix.jdbc;
 
-import com.risen.phoenix.jdbc.core.PhoenixJdbcTemplate;
+import com.risen.phoenix.jdbc.core.PhoenixService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
@@ -15,7 +15,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 public class BaseTest {
 
     @Autowired
-    PhoenixJdbcTemplate phoenixJdbcTemplate;
+    PhoenixService phoenixService;
 
     @BeforeEach
     public void before(){

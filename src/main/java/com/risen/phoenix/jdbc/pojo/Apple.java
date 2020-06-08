@@ -64,4 +64,15 @@ public class Apple extends BasePhoenix{
     public void setaDouble(double aDouble) {
         this.aDouble = aDouble;
     }
+
+    @Override
+    public String toString() {
+        return "Apple{" +
+                "uuid=" + uuid +
+                ", name='" + name + '\'' +
+                ", gmtCreate=" + gmtCreate +
+                ", aFloat=" + aFloat +
+                ", aDouble=" + aDouble +
+                '}';
+    }
 }

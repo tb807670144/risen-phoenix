@@ -1,7 +1,5 @@
 package com.risen.phoenix.jdbc.table;
 
-import com.google.common.base.CaseFormat;
-
 /**
  * Phoenix字段类型控制
  */
@@ -49,7 +47,7 @@ public class PhoenixField {
     }
 
     public String getFieldName() {
-        return toLowerCamel(fieldName).toUpperCase();
+        return fieldName;
     }
 
     public void setFieldName(String fieldName) {
@@ -83,10 +81,4 @@ public class PhoenixField {
         this.primaryKey = primaryKey;
     }
 
-    /**
-     * aaaBbbCcc变为AAA_BBB_CCC
-     */
-    private String toLowerCamel(String fieldName){
-        return CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, fieldName);
-    }
 }

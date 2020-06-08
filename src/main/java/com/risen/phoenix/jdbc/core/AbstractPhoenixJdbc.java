@@ -4,10 +4,13 @@ import com.google.common.base.CaseFormat;
 import com.risen.phoenix.jdbc.pojo.BasePhoenix;
 import com.risen.phoenix.jdbc.table.PhoenixField;
 import com.risen.phoenix.jdbc.table.PhoenixTable;
+import com.risen.phoenix.jdbc.util.DateUtil;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -19,14 +22,14 @@ import java.util.List;
 public abstract class AbstractPhoenixJdbc {
 
     /**
-     *
+     * 创建表
      * @param sql 可执行SQL，增删改，建表均可
      * @throws SQLException 异常
      */
     public abstract Integer createTable(String sql) throws SQLException;
 
     /**
-     *
+     * 创建表
      * @param clazz 源类
      * @throws SQLException 异常
      */
@@ -37,7 +40,7 @@ public abstract class AbstractPhoenixJdbc {
      * @param t 类 extends BasePhoenix
      * @throws SQLException 异常
      */
-    public abstract  <T> void save(T t) throws SQLException;
+    public abstract  <T> int save(T t) throws SQLException;
 
     public abstract void delete() throws SQLException;
 
@@ -48,7 +51,7 @@ public abstract class AbstractPhoenixJdbc {
      * @param t 类
      * @throws SQLException 异常
      */
-    public abstract <T> List<T> select(T t) throws SQLException;
+    public abstract <T> List<T> select(Class<T> clazz) throws SQLException;
 
     /**
      * 构建建表语句
@@ -102,40 +105,6 @@ public abstract class AbstractPhoenixJdbc {
         return insert.toString();
     }
 
-    /**
-     * 结果集映射为对象
-     * @param rs 结果集
-     * @param clazz 对象
-     * @param <T> 泛型
-     * @return list集合
-     */
-    protected <T> List<T> parseObject(ResultSet rs, Class<T> clazz){
-        List<T> list = new ArrayList<T>();
-        Object obj=null;
-        try {
-            int i = 0;
-            while (rs.next()) {
-                obj = clazz.newInstance();
-                //利用反射，获取对象类信息中的所有属性
-                Field[] fields = clazz.getDeclaredFields();
-                for(Field fd:fields){
-                    fd.setAccessible(true);
-                    Object object = rs.getObject(lowerCamel(fd.getName()));
-                    fd.set(obj, object);
-                }
-                i++;
-            }
-            System.out.println("数据：---" + i + "---条");
-            list.add((T)obj);
-        }catch (SQLException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
 
     /**
      * 构建主键语句
@@ -172,10 +141,11 @@ public abstract class AbstractPhoenixJdbc {
                 Date date = (Date) data;
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 String format = dateFormat.format(date);
-                return String.format("TO_DATE('%S')%s", format, flat);
+                return String.format("TO_DATE('%s')%s", format, flat);
             default:
                 return data + flat;
 
         }
     }
+
 }
