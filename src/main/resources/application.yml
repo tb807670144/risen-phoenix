@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: jdbc:phoenix:bigdata:6581
+    driver-class-name: org.apache.phoenix.jdbc.PhoenixDriver
+    username:
+    password:
+  devtools:
+    restart:
+      additional-paths: src/main/java  #重启目录
+      enabled: true #开启热部署
+      additional-exclude: resources/templates/**

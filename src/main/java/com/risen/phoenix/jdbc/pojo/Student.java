@@ -1,10 +1,20 @@
-package com.risen.phoenix.util.pojo;
+package com.risen.phoenix.jdbc.pojo;
 
-public class Student {
+import com.risen.phoenix.jdbc.annotations.PhxField;
+import com.risen.phoenix.jdbc.annotations.PhxId;
+import com.risen.phoenix.jdbc.core.enums.PhxDataTypeEnum;
 
+public class Student extends BasePhoenix{
+
+    @PhxId(PhxDataTypeEnum.VARCHAR)
     private Integer id;
+    @PhxField(value = PhxDataTypeEnum.VARCHAR, length = 20)
     private String name;
+    @PhxField(PhxDataTypeEnum.INTEGER)
     private String userType;
+    private String userType2;
+    private String userType3;
+    private String userType4;
 
     public Student() {
     }

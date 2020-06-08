@@ -1,32 +1,57 @@
-package com.risen.phoenix.util.common;
+package com.risen.phoenix.jdbc.core.enums;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 
-public enum DbColumType {
+public enum PhxDataTypeEnum {
     /**
      * INTEGER
      */
-    INTEGER("INTEGER"),
-    VARCHAR("VARCHAR(20)"),
-    BIGINT("BIGINT"),
-
-
+    INTEGER("INTEGER", "Integer"),
+    UNSIGNED_INT("UNSIGNED_INT", "Integer"),
+    BIGINT("BIGINT", "Long"),
+    UNSIGNED_LONG("UNSIGNED_LONG", "Long"),
+    TINYINT("TINYINT", "Byte"),
+    SMALLINT("SMALLINT", "Short"),
+    UNSIGNED_SMALLINT("UNSIGNED_SMALLINT", "Short"),
+    FLOAT("FLOAT", "Float"),
+    UNSIGNED_FLOAT("UNSIGNED_FLOAT", "Float"),
+    DOUBLE("DOUBLE", "Double"),
+    UNSIGNED_DOUBLE("UNSIGNED_DOUBLE", "Double"),
+    DECIMAL("DECIMAL", "BigDecimal"),
+    BOOLEAN("BOOLEAN", "Boolean"),
+    TIME("TIME", "Time"),
+    DATE("DATE", "Date"),
+    TIMESTAMP("TIMESTAMP", "Timestamp"),
+    UNSIGNED_TIME("UNSIGNED_TIME", "Time"),
+    UNSIGNED_DATE("UNSIGNED_DATE", "Date"),
+    UNSIGNED_TIMESTAMP("UNSIGNED_TIMESTAMP", "Timestamp "),
+    VARCHAR("VARCHAR", "String"),
+    CHAR ("CHAR", "String"),
+    ARRAY ("ARRAY", "Array"),
     ;
 
     /**
-     * 字段类型
+     * 数据库字段类型
      */
     private String columnType;
-
     /**
-     * 获取类型
+     * JAVA类型
      */
-//    public abstract String getType();
+    private String javaType;
 
-    DbColumType(String columnType) {
+    public String getColumnType() {
+        return columnType;
+    }
+
+    public String getJavaType() {
+        return javaType;
+    }
+
+    PhxDataTypeEnum(String columnType, String javaType) {
         this.columnType = columnType;
+        this.javaType = javaType;
     }
 
     public static String getJavaType(String columnType){
@@ -107,7 +132,7 @@ public enum DbColumType {
                 String columnName = metaData.getColumnName(i);
             }
         }
-        String ss = DbColumType.getJavaType("varchar");
+        String ss = PhxDataTypeEnum.getJavaType("varchar");
         System.out.println(ss);
     }
 }

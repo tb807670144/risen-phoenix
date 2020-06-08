@@ -1,4 +1,4 @@
-package com.risen.phoenix.util.common.table;
+package com.risen.phoenix.jdbc.table;
 
 import com.google.common.base.CaseFormat;
 
