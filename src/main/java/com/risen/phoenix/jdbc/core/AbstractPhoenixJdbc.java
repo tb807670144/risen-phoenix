@@ -1,6 +1,9 @@
 package com.risen.phoenix.jdbc.core;
 
 import com.google.common.base.CaseFormat;
+import com.risen.phoenix.jdbc.annotations.PhxField;
+import com.risen.phoenix.jdbc.annotations.PhxId;
+import com.risen.phoenix.jdbc.annotations.PhxTabName;
 import com.risen.phoenix.jdbc.pojo.BasePhoenix;
 import com.risen.phoenix.jdbc.table.PhoenixField;
 import com.risen.phoenix.jdbc.table.PhoenixTable;
@@ -36,11 +39,19 @@ public abstract class AbstractPhoenixJdbc {
     public abstract Integer createTable(Class<?> clazz) throws SQLException;
 
     /**
-     *
+     * 插入语句
      * @param t 类 extends BasePhoenix
      * @throws SQLException 异常
      */
-    public abstract  <T> int save(T t) throws SQLException;
+    public abstract <T> int save(T t) throws SQLException;
+
+    /**
+     * 批量插入数据
+     * @param list 集合
+     * @return 插入数量
+     * @throws SQLException
+     */
+    public abstract <T> int batchSave(List<T> list) throws SQLException;
 
     public abstract void delete() throws SQLException;
 
@@ -48,7 +59,7 @@ public abstract class AbstractPhoenixJdbc {
 
     /**
      * 查询语句
-     * @param t 类
+     * @param clazz 类
      * @throws SQLException 异常
      */
     public abstract <T> List<T> select(Class<T> clazz) throws SQLException;
@@ -81,6 +92,62 @@ public abstract class AbstractPhoenixJdbc {
         }
         sql.append(")");
         return sql.toString();
+    }
+
+    protected <T> String buildInsertSql(T t){
+        Class<?> clazz = t.getClass();
+        String tableName = null, schem = null;
+        boolean bar1 = clazz.isAnnotationPresent(PhxTabName.class);
+        if (bar1){
+            PhxTabName an1 = clazz.getAnnotation(PhxTabName.class);
+            if (an1.upLower()){
+                tableName = an1.tableName().toUpperCase();
+                schem = "".equals(an1.schem()) ? "RISEN" : an1.schem().toUpperCase();
+            }else {
+                tableName = lowerCamel(tableName);
+                schem = "".equals(an1.schem()) ? "RISEN" : an1.schem();
+            }
+        }else {
+            tableName = lowerCamel(clazz.getSimpleName());
+            schem = "RISEN";
+        }
+
+        StringBuilder fieldSql = new StringBuilder();
+        StringBuilder valueSql = new StringBuilder();
+
+        Field[] fields = clazz.getDeclaredFields();
+        for (Field field : fields) {
+            boolean bar2 = field.isAnnotationPresent(PhxId.class);
+            if (bar2){
+                try {
+                    field.setAccessible(true);
+                    Object result = commaNorm(field.getType().getName(), field.get(t), ",");
+                    if (result != null){
+                        fieldSql.append(lowerCamel(field.getName())).append(",");
+                        valueSql.append(result);
+                    }
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                continue;
+            }
+            boolean bar3 = field.isAnnotationPresent(PhxField.class);
+            if (bar3){
+                try {
+                    field.setAccessible(true);
+                    Object result = commaNorm(field.getType().getName(), field.get(t), ",");
+                    if (result != null){
+                        fieldSql.append(lowerCamel(field.getName())).append(",");
+                        valueSql.append(result);
+                    }
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        String colum = fieldSql.substring(0, fieldSql.length() - 1);
+        String value = valueSql.substring(0, valueSql.length() - 1);
+        return buildInsertSql(schem, tableName, colum, value);
     }
 
 

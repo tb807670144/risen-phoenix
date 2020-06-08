@@ -14,7 +14,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -98,60 +101,27 @@ public class PhoenixService extends AbstractPhoenixJdbc{
     @Transactional(rollbackFor = SQLException.class)
     @Override
     public <T> int save(T t) throws SQLException{
-        Class<?> clazz = t.getClass();
-        String tableName = null, schem = null;
-        boolean bar1 = clazz.isAnnotationPresent(PhxTabName.class);
-        if (bar1){
-            PhxTabName an1 = clazz.getAnnotation(PhxTabName.class);
-            if (an1.upLower()){
-                tableName = an1.tableName().toUpperCase();
-                schem = "".equals(an1.schem()) ? "RISEN" : an1.schem().toUpperCase();
-            }else {
-                tableName = lowerCamel(tableName);
-                schem = "".equals(an1.schem()) ? "RISEN" : an1.schem();
-            }
-        }else {
-            tableName = lowerCamel(clazz.getSimpleName());
-            schem = "RISEN";
-        }
-
-        StringBuilder fieldSql = new StringBuilder();
-        StringBuilder valueSql = new StringBuilder();
-
-        Field[] fields = clazz.getDeclaredFields();
-        for (Field field : fields) {
-            boolean bar2 = field.isAnnotationPresent(PhxId.class);
-            if (bar2){
-                try {
-                    field.setAccessible(true);
-                    Object result = commaNorm(field.getType().getName(), field.get(t), ",");
-                    if (result != null){
-                        fieldSql.append(lowerCamel(field.getName())).append(",");
-                        valueSql.append(result);
-                    }
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-                continue;
-            }
-            boolean bar3 = field.isAnnotationPresent(PhxField.class);
-            if (bar3){
-                try {
-                    field.setAccessible(true);
-                    Object result = commaNorm(field.getType().getName(), field.get(t), ",");
-                    if (result != null){
-                        fieldSql.append(lowerCamel(field.getName())).append(",");
-                        valueSql.append(result);
-                    }
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        String colum = fieldSql.substring(0, fieldSql.length() - 1);
-        String value = valueSql.substring(0, valueSql.length() - 1);
-        String sql = buildInsertSql(schem, tableName, colum, value);
+        String sql = buildInsertSql(t);
         return jdbcTemplate.update(sql);
+    }
+
+    @Override
+    public <T> int batchSave(List<T> list) throws SQLException{
+        Connection conn = jdbcTemplate.getDataSource().getConnection();
+        conn.setAutoCommit(false);
+        int batchSize = 0, commitSize = 100, insertCount = 0;
+        for (T t : list) {
+            PreparedStatement statement = conn.prepareStatement(buildInsertSql(t));
+            statement.execute();
+            batchSize++;
+            if (batchSize % commitSize == 0){
+                insertCount += batchSize;
+                batchSize = 0;
+                conn.commit();
+            }
+        }
+        conn.commit();
+        return insertCount;
     }
 
     @Override

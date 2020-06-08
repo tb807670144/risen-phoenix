@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 class RisenPhoenixApplicationTests extends BaseTest {
 
@@ -35,6 +36,21 @@ class RisenPhoenixApplicationTests extends BaseTest {
         list.add(apple);
         list.add(apple2);
         phoenixService.save(apple2);
+    }
+
+    @Test
+    void batchSave() throws SQLException {
+        List<KingAnimal> list = new ArrayList<>();
+        for(int i = 1; i < 1000; i++){
+            KingAnimal kingAnimal = new KingAnimal();
+            kingAnimal.setKingUuid(i);
+            kingAnimal.setKingName("动物"+i*3);
+            kingAnimal.setKingType(new Random().nextInt()+"");
+            list.add(kingAnimal);
+        }
+
+        int i = phoenixService.batchSave(list);
+        System.out.println("成功执行数据：" + i + "条");
     }
 
     @Test

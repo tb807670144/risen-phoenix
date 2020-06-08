@@ -6,11 +6,11 @@ import com.risen.phoenix.jdbc.core.enums.PhxDataTypeEnum;
 
 public class KingAnimal {
 
-    @PhxId(PhxDataTypeEnum.VARCHAR)
+    @PhxId(PhxDataTypeEnum.INTEGER)
     private Integer kingUuid;
     @PhxField(value = PhxDataTypeEnum.VARCHAR, length = 20)
     private String kingName;
-    @PhxField(PhxDataTypeEnum.INTEGER)
+    @PhxField(PhxDataTypeEnum.VARCHAR)
     private String kingType;
 
     public Integer getKingUuid() {
