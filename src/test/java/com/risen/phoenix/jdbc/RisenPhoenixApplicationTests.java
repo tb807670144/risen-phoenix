@@ -55,6 +55,7 @@ class RisenPhoenixApplicationTests extends BaseTest {
 
     @Test
     void select() throws SQLException {
+
         List<Apple> select = phoenixService.select(Apple.class);
         for (Apple apple1 : select) {
             System.out.println(apple1.toString());
