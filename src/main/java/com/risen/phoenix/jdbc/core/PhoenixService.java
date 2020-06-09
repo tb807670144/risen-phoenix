@@ -109,16 +109,17 @@ public class PhoenixService extends AbstractPhoenixJdbc{
     public <T> int batchSave(List<T> list) throws SQLException{
         Connection conn = jdbcTemplate.getDataSource().getConnection();
         conn.setAutoCommit(false);
-        int batchSize = 0, commitSize = 100, insertCount = 0;
+        int batchSize = 0, commitSize = 130, insertCount = 0;
         for (T t : list) {
             PreparedStatement statement = conn.prepareStatement(buildInsertSql(t));
+            System.out.println(buildInsertSql(t));
             statement.execute();
             batchSize++;
             if (batchSize % commitSize == 0){
-                insertCount += batchSize;
                 batchSize = 0;
                 conn.commit();
             }
+            insertCount++;
         }
         conn.commit();
         return insertCount;
@@ -137,7 +138,7 @@ public class PhoenixService extends AbstractPhoenixJdbc{
     @Override
     public <T> List<T> select(Class<T> clazz) throws SQLException {
         BeanPropertyRowMapper<T> rowMapper = new BeanPropertyRowMapper<>(clazz);
-        return jdbcTemplate.query("SELECT * FROM CCT.APPLE", rowMapper);
+        return jdbcTemplate.query(buildSelectSql(clazz, ""), rowMapper);
     }
 
 }

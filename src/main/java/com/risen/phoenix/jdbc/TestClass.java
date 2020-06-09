@@ -177,12 +177,23 @@ public class TestClass {
 
         return QueryUtil.constructSelectStatement(tableName, strList, where, null, false);
     }
-    public static String lowerCamel(String str){
+    private static String lowerCamel(String str){
         return CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, str).toUpperCase();
     }
 
+    public String method6(){
+
+
+        return "";
+    }
+
     public static void main(String[] args) throws Exception{
-        String s = buildSelectSql(Apple.class, "user_name = 1");
-        System.out.println(s);
+        Apple apple = new Apple();
+        apple.setName("王境泽");
+        String name = apple.getName();
+
+
+        /*String s = buildSelectSql(Apple.class, "user_name = 1");
+        System.out.println(s);*/
     }
 }

@@ -8,7 +8,7 @@ import com.risen.phoenix.jdbc.core.enums.PhxDataTypeEnum;
 import java.util.Date;
 
 @PhxTabName(tableName = "apple", schem = "cct")
-public class Apple extends BasePhoenix{
+public class Apple{
 
     @PhxId(PhxDataTypeEnum.INTEGER)
     private Integer uuid;

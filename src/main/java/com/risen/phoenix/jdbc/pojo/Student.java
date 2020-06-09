@@ -4,7 +4,7 @@ import com.risen.phoenix.jdbc.annotations.PhxField;
 import com.risen.phoenix.jdbc.annotations.PhxId;
 import com.risen.phoenix.jdbc.core.enums.PhxDataTypeEnum;
 
-public class Student extends BasePhoenix{
+public class Student{
 
     @PhxId(PhxDataTypeEnum.VARCHAR)
     private Integer id;
