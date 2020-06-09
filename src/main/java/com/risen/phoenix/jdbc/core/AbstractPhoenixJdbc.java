@@ -6,10 +6,12 @@ import com.risen.phoenix.jdbc.annotations.PhxId;
 import com.risen.phoenix.jdbc.annotations.PhxTabName;
 import com.risen.phoenix.jdbc.table.PhoenixField;
 import com.risen.phoenix.jdbc.table.PhoenixTable;
+import org.apache.phoenix.util.QueryUtil;
 
 import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -183,6 +185,41 @@ public abstract class AbstractPhoenixJdbc {
      */
     protected String lowerCamel(String str){
         return CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, str).toUpperCase();
+    }
+
+    /**
+     * 查询条件
+     * @return
+     */
+    protected <T> String buildSelectSql(Class<T> clazz, String where){
+        String tableName, schem;
+        boolean bar1 = clazz.isAnnotationPresent(PhxTabName.class);
+        if (bar1) {
+            PhxTabName annotation = clazz.getAnnotation(PhxTabName.class);
+            schem = annotation.schem();
+            if (!schem.endsWith(".")){
+                schem = schem + ".";
+            }
+            tableName = schem + annotation.tableName();
+        }else {
+            tableName = "RISEN." + lowerCamel(clazz.getSimpleName());
+        }
+
+        List<String> strList = new ArrayList<>();
+        Field[] fields = clazz.getDeclaredFields();
+        for (Field field : fields) {
+            boolean bar2 = field.isAnnotationPresent(PhxId.class);
+            if (bar2){
+                strList.add(lowerCamel(field.getName()));
+                continue;
+            }
+            boolean bar3 = field.isAnnotationPresent(PhxField.class);
+            if (bar3){
+                strList.add(lowerCamel(field.getName()));
+            }
+        }
+
+        return QueryUtil.constructSelectStatement(tableName, strList, where, null, false);
     }
 
     /**

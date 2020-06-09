@@ -1,17 +1,18 @@
 package com.risen.phoenix.jdbc;
 
+import com.google.common.base.CaseFormat;
 import com.risen.phoenix.jdbc.annotations.PhxField;
+import com.risen.phoenix.jdbc.annotations.PhxId;
 import com.risen.phoenix.jdbc.annotations.PhxTabName;
 import com.risen.phoenix.jdbc.core.enums.PhxDataTypeEnum;
 import com.risen.phoenix.jdbc.pojo.Apple;
 import com.risen.phoenix.jdbc.pojo.Student;
+import org.apache.hadoop.hbase.filter.CompareFilter;
 import org.apache.phoenix.parse.HintNode;
 import org.apache.phoenix.util.ColumnInfo;
 import org.apache.phoenix.util.QueryUtil;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -82,7 +83,7 @@ public class TestClass {
      */
     public static void method4() throws Exception{
         List<ColumnInfo> list = new ArrayList<>();
-        ColumnInfo columnInfo = new ColumnInfo("USER_UUID", 3);
+        ColumnInfo columnInfo = new ColumnInfo("USER_UUID", 0);
         ColumnInfo columnInfo2 = new ColumnInfo("USER_NAME", 3);
         list.add(columnInfo);
         list.add(columnInfo2);
@@ -93,7 +94,7 @@ public class TestClass {
 
         String tableName = QueryUtil.constructSelectStatement("tableName", list, "2131321");
         System.out.println(tableName);
-        String tabName = QueryUtil.constructGenericUpsertStatement("tabName", 3);
+        String tabName = QueryUtil.constructGenericUpsertStatement("RISEN.TAB_NAME", 3);
         System.out.println(tabName);
         String table_name = QueryUtil.constructUpsertStatement("TABLE_NAME", list);
         System.out.println(table_name);
@@ -109,9 +110,79 @@ public class TestClass {
         Integer offsetLimit = QueryUtil.getOffsetLimit(1, 5);
         String viewStatement = QueryUtil.getViewStatement("RISEN", "table_name", "USER_NAME = 213");
         System.out.println(viewStatement);
+        CompareFilter.CompareOp greater = CompareFilter.CompareOp.LESS_OR_EQUAL;
+        String s = QueryUtil.toSQL(greater);
+        System.out.println(s);
+    }
+
+
+    public static String selCloum(String str){
+        if (str == null){
+            return null;
+        }
+        return CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, str).toUpperCase();
+    }
+
+    public static String selCloum(String... strs){
+        if (strs.length <= 0){
+            return null;
+        }
+        StringBuilder selCloum = new StringBuilder();
+        for (String str : strs) {
+            String colum = selCloum(str);
+            selCloum.append(colum).append(",");
+        }
+        return selCloum.substring(0, selCloum.length() - 1);
+    }
+
+    public static String selCloum(List<String> strList){
+        if (strList == null || strList.size() <= 0){
+            return null;
+        }
+        StringBuilder selCloum = new StringBuilder();
+        for (String str : strList) {
+            String colum = selCloum(str);
+            selCloum.append(colum).append(",");
+        }
+        return selCloum.substring(0, selCloum.length() - 1);
+    }
+
+    public static  <T> String buildSelectSql(Class<T> clazz, String where){
+        String tableName, schem;
+        boolean bar1 = clazz.isAnnotationPresent(PhxTabName.class);
+        if (bar1) {
+            PhxTabName annotation = clazz.getAnnotation(PhxTabName.class);
+            schem = annotation.schem();
+            if (!schem.endsWith(".")){
+                schem = schem + ".";
+            }
+            tableName = schem + annotation.tableName();
+        }else {
+            tableName = "RISEN." + lowerCamel(clazz.getSimpleName());
+        }
+
+        List<String> strList = new ArrayList<>();
+        Field[] fields = clazz.getDeclaredFields();
+        for (Field field : fields) {
+            boolean bar2 = field.isAnnotationPresent(PhxId.class);
+            if (bar2){
+                strList.add(lowerCamel(field.getName()));
+                continue;
+            }
+            boolean bar3 = field.isAnnotationPresent(PhxField.class);
+            if (bar3){
+                strList.add(lowerCamel(field.getName()));
+            }
+        }
+
+        return QueryUtil.constructSelectStatement(tableName, strList, where, null, false);
+    }
+    public static String lowerCamel(String str){
+        return CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, str).toUpperCase();
     }
 
     public static void main(String[] args) throws Exception{
-        TestClass.method5();
+        String s = buildSelectSql(Apple.class, "user_name = 1");
+        System.out.println(s);
     }
 }

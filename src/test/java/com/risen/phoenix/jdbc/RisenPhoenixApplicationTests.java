@@ -41,11 +41,11 @@ class RisenPhoenixApplicationTests extends BaseTest {
     @Test
     void batchSave() throws SQLException {
         List<KingAnimal> list = new ArrayList<>();
-        for(int i = 1; i < 1000; i++){
+        for(int i = 1; i < 100000; i++){
             KingAnimal kingAnimal = new KingAnimal();
             kingAnimal.setKingUuid(i);
             kingAnimal.setKingName("动物"+i*3);
-            kingAnimal.setKingType(new Random().nextInt()+"");
+            kingAnimal.setKingType(new Random().nextInt(1000)+"");
             list.add(kingAnimal);
         }
 

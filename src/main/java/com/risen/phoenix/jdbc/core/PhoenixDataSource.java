@@ -1,11 +1,10 @@
 package com.risen.phoenix.jdbc.core;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
@@ -13,18 +12,26 @@ import javax.sql.DataSource;
 @Configuration
 public class PhoenixDataSource {
 
-    @Autowired
-    private Environment environment;
+    @Value("${phoenix.url:}")
+    String url;
+    @Value("${phoenix.driver-class-name:org.apache.phoenix.jdbc.PhoenixDriver}")
+    String driverClassName;
+    @Value("${phoenix.username:}")
+    String userName;
+    @Value("${phoenix.password:}")
+    String passWord;
+    @Value("${phoenix.default-auto-commit:false}")
+    String autoCommit;
 
     @Bean(name = "phoenixDataSourceJdbc")
     @Qualifier("phoenixDataSourceJdbc")
     public DataSource dataSource(){
         DruidDataSource druidDataSource = new DruidDataSource();
-        druidDataSource.setUrl(environment.getProperty("phoenix.url"));
-        druidDataSource.setDriverClassName(environment.getProperty("phoenix.driver-class-name"));
-        druidDataSource.setUsername(environment.getProperty("phoenix.username"));
-        druidDataSource.setPassword(environment.getProperty("phoenix.password"));
-        druidDataSource.setDefaultAutoCommit(Boolean.valueOf(environment.getProperty("phoenix.default-auto-commit")));
+        druidDataSource.setUrl(url);
+        druidDataSource.setDriverClassName(driverClassName);
+        druidDataSource.setUsername(userName);
+        druidDataSource.setPassword(passWord);
+        druidDataSource.setDefaultAutoCommit(Boolean.valueOf(autoCommit));
         return druidDataSource;
     }
 
