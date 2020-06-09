@@ -4,18 +4,12 @@ import com.google.common.base.CaseFormat;
 import com.risen.phoenix.jdbc.annotations.PhxField;
 import com.risen.phoenix.jdbc.annotations.PhxId;
 import com.risen.phoenix.jdbc.annotations.PhxTabName;
-import com.risen.phoenix.jdbc.pojo.BasePhoenix;
 import com.risen.phoenix.jdbc.table.PhoenixField;
 import com.risen.phoenix.jdbc.table.PhoenixTable;
-import com.risen.phoenix.jdbc.util.DateUtil;
 
 import java.lang.reflect.Field;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 

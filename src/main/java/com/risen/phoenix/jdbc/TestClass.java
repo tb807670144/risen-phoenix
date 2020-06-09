@@ -5,10 +5,15 @@ import com.risen.phoenix.jdbc.annotations.PhxTabName;
 import com.risen.phoenix.jdbc.core.enums.PhxDataTypeEnum;
 import com.risen.phoenix.jdbc.pojo.Apple;
 import com.risen.phoenix.jdbc.pojo.Student;
+import org.apache.phoenix.parse.HintNode;
+import org.apache.phoenix.util.ColumnInfo;
+import org.apache.phoenix.util.QueryUtil;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestClass {
 
@@ -70,8 +75,43 @@ public class TestClass {
 
     }
 
-    public static void main(String[] args) throws Exception{
-        TestClass.method3();
+    /**
+     * Phoenix工具类
+     * @see QueryUtil
+     * @throws Exception
+     */
+    public static void method4() throws Exception{
+        List<ColumnInfo> list = new ArrayList<>();
+        ColumnInfo columnInfo = new ColumnInfo("USER_UUID", 3);
+        ColumnInfo columnInfo2 = new ColumnInfo("USER_NAME", 3);
+        list.add(columnInfo);
+        list.add(columnInfo2);
 
+        List<String> strList = new ArrayList<>();
+        strList.add("字符串1");
+        strList.add("字符串1");
+
+        String tableName = QueryUtil.constructSelectStatement("tableName", list, "2131321");
+        System.out.println(tableName);
+        String tabName = QueryUtil.constructGenericUpsertStatement("tabName", 3);
+        System.out.println(tabName);
+        String table_name = QueryUtil.constructUpsertStatement("TABLE_NAME", list);
+        System.out.println(table_name);
+        String s = QueryUtil.constructParameterizedInClause(1, 6);
+        System.out.println(s);
+        String ttt = QueryUtil.constructSelectStatement("tableName", strList, "USER_NAME = 1 AND USER_TYPE = 5", HintNode.Hint.SEEK_TO_COLUMN, false);
+        System.out.println(ttt);
+    }
+
+
+    public static void method5() throws Exception{
+
+        Integer offsetLimit = QueryUtil.getOffsetLimit(1, 5);
+        String viewStatement = QueryUtil.getViewStatement("RISEN", "table_name", "USER_NAME = 213");
+        System.out.println(viewStatement);
+    }
+
+    public static void main(String[] args) throws Exception{
+        TestClass.method5();
     }
 }
