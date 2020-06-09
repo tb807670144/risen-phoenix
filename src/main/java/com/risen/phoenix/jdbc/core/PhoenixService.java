@@ -3,17 +3,21 @@ package com.risen.phoenix.jdbc.core;
 import com.risen.phoenix.jdbc.annotations.PhxField;
 import com.risen.phoenix.jdbc.annotations.PhxId;
 import com.risen.phoenix.jdbc.annotations.PhxTabName;
-import com.risen.phoenix.jdbc.annotations.PhxTransaction;
 import com.risen.phoenix.jdbc.core.enums.PhxDataTypeEnum;
-import com.risen.phoenix.jdbc.pojo.BasePhoenix;
 import com.risen.phoenix.jdbc.table.PhoenixField;
 import com.risen.phoenix.jdbc.table.PhoenixTable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
-import java.sql.ResultSet;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,11 +25,12 @@ import java.util.List;
  * 简化Phoenix
  * 绑定参数执行SQL,POJO对象结果映射
  */
-@Component
-public class PhoenixJdbcTemplate extends AbstractPhoenixJdbc{
+@Service
+public class PhoenixService extends AbstractPhoenixJdbc{
 
-    @Autowired
-    PhoenixTransactionManager transactionManager;
+    @Autowired(required = false)
+    @Qualifier("phoenTemplate")
+    JdbcTemplate jdbcTemplate;
 
     /**
      * 直接执行SQL
@@ -35,7 +40,8 @@ public class PhoenixJdbcTemplate extends AbstractPhoenixJdbc{
      */
     @Override
     public Integer createTable(String sql) throws SQLException{
-        return transactionManager.execute(sql);
+        jdbcTemplate.execute(sql);
+        return 0;
     }
 
     /**
@@ -44,7 +50,7 @@ public class PhoenixJdbcTemplate extends AbstractPhoenixJdbc{
      * @return Integer
      * @throws SQLException 异常信息
      */
-    @PhxTransaction
+    @Transactional
     @Override
     public Integer createTable(Class<?> clazz) throws SQLException{
         String tableName = null, schem = null;
@@ -92,63 +98,30 @@ public class PhoenixJdbcTemplate extends AbstractPhoenixJdbc{
         return createTable(sql);
     }
 
-    @PhxTransaction
+    @Transactional(rollbackFor = SQLException.class)
     @Override
-    public <T> void save(T t) throws SQLException{
-        Class<?> clazz = t.getClass();
-        String tableName = null, schem = null;
-        boolean bar1 = clazz.isAnnotationPresent(PhxTabName.class);
-        if (bar1){
-            PhxTabName an1 = clazz.getAnnotation(PhxTabName.class);
-            if (an1.upLower()){
-                tableName = an1.tableName().toUpperCase();
-                schem = "".equals(an1.schem()) ? "RISEN" : an1.schem().toUpperCase();
-            }else {
-                tableName = lowerCamel(tableName);
-                schem = "".equals(an1.schem()) ? "RISEN" : an1.schem();
-            }
-        }else {
-            tableName = lowerCamel(clazz.getSimpleName());
-            schem = "RISEN";
-        }
+    public <T> int save(T t) throws SQLException{
+        String sql = buildInsertSql(t);
+        return jdbcTemplate.update(sql);
+    }
 
-        StringBuilder fieldSql = new StringBuilder();
-        StringBuilder valueSql = new StringBuilder();
-
-        Field[] fields = clazz.getDeclaredFields();
-        for (Field field : fields) {
-            boolean bar2 = field.isAnnotationPresent(PhxId.class);
-            if (bar2){
-                try {
-                    field.setAccessible(true);
-                    Object result = commaNorm(field.getType().getName(), field.get(t), ",");
-                    if (result != null){
-                        fieldSql.append(lowerCamel(field.getName())).append(",");
-                        valueSql.append(result);
-                    }
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-                continue;
-            }
-            boolean bar3 = field.isAnnotationPresent(PhxField.class);
-            if (bar3){
-                try {
-                    field.setAccessible(true);
-                    Object result = commaNorm(field.getType().getName(), field.get(t), ",");
-                    if (result != null){
-                        fieldSql.append(lowerCamel(field.getName())).append(",");
-                        valueSql.append(result);
-                    }
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
+    @Override
+    public <T> int batchSave(List<T> list) throws SQLException{
+        Connection conn = jdbcTemplate.getDataSource().getConnection();
+        conn.setAutoCommit(false);
+        int batchSize = 0, commitSize = 100, insertCount = 0;
+        for (T t : list) {
+            PreparedStatement statement = conn.prepareStatement(buildInsertSql(t));
+            statement.execute();
+            batchSize++;
+            if (batchSize % commitSize == 0){
+                insertCount += batchSize;
+                batchSize = 0;
+                conn.commit();
             }
         }
-        String colum = fieldSql.substring(0, fieldSql.length() - 1);
-        String value = valueSql.substring(0, valueSql.length() - 1);
-        String sql = buildInsertSql(schem, tableName, colum, value);
-        transactionManager.execute(sql);
+        conn.commit();
+        return insertCount;
     }
 
     @Override
@@ -162,11 +135,9 @@ public class PhoenixJdbcTemplate extends AbstractPhoenixJdbc{
     }
 
     @Override
-    public <T> List<T> select(T t) throws SQLException {
-        ResultSet resultSet = transactionManager.executeQuery("SELECT * FROM CCT.APPLE");
-        List<?> objects = parseObject(resultSet, t.getClass());
-        System.out.println("结果数：" + objects.size());
-        return null;
+    public <T> List<T> select(Class<T> clazz) throws SQLException {
+        BeanPropertyRowMapper<T> rowMapper = new BeanPropertyRowMapper<>(clazz);
+        return jdbcTemplate.query("SELECT * FROM CCT.APPLE", rowMapper);
     }
 
 }
