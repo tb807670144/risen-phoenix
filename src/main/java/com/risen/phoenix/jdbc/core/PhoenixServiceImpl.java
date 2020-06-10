@@ -4,6 +4,7 @@ import com.risen.phoenix.jdbc.annotations.PhxField;
 import com.risen.phoenix.jdbc.annotations.PhxId;
 import com.risen.phoenix.jdbc.annotations.PhxTabName;
 import com.risen.phoenix.jdbc.core.enums.PhxDataTypeEnum;
+import com.risen.phoenix.jdbc.core.pnd.Pnd;
 import com.risen.phoenix.jdbc.table.PhoenixField;
 import com.risen.phoenix.jdbc.table.PhoenixTable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,6 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +26,7 @@ import java.util.List;
  * 绑定参数执行SQL,POJO对象结果映射
  */
 @Service
-public class PhoenixService extends AbstractPhoenixJdbc{
+public class PhoenixServiceImpl extends Template implements IPhoenixService{
 
     @Autowired(required = false)
     @Qualifier("phoenTemplate")
@@ -39,9 +39,8 @@ public class PhoenixService extends AbstractPhoenixJdbc{
      * @throws SQLException 异常信息
      */
     @Override
-    public Integer createTable(String sql) throws SQLException{
+    public void createTable(String sql) throws SQLException{
         jdbcTemplate.execute(sql);
-        return 0;
     }
 
     /**
@@ -52,7 +51,7 @@ public class PhoenixService extends AbstractPhoenixJdbc{
      */
     @Transactional
     @Override
-    public Integer createTable(Class<?> clazz) throws SQLException{
+    public void createTable(Class<?> clazz) throws SQLException{
         String tableName = null, schem = null;
         int salt = 3;
         boolean bar1 = clazz.isAnnotationPresent(PhxTabName.class), compression = false;
@@ -103,7 +102,7 @@ public class PhoenixService extends AbstractPhoenixJdbc{
         PhoenixTable phoenixTable = new PhoenixTable(schem, tableName, list, salt, compression);
         String sql = buildCreateSql(phoenixTable);
         System.out.println(sql);
-        return createTable(sql);
+        createTable(sql);
     }
 
     @Transactional(rollbackFor = SQLException.class)
@@ -117,7 +116,7 @@ public class PhoenixService extends AbstractPhoenixJdbc{
     public <T> int batchSave(List<T> list) throws SQLException{
         Connection conn = jdbcTemplate.getDataSource().getConnection();
         conn.setAutoCommit(false);
-        int batchSize = 0, commitSize = 130, insertCount = 0;
+        int batchSize = 0, commitSize = 150, insertCount = 0;
         for (T t : list) {
             PreparedStatement statement = conn.prepareStatement(buildInsertSql(t));
             System.out.println(buildInsertSql(t));
@@ -144,9 +143,13 @@ public class PhoenixService extends AbstractPhoenixJdbc{
     }
 
     @Override
-    public <T> List<T> select(Class<T> clazz) throws SQLException {
+    public <T> List<T> select(Class<T> clazz, Pnd<T> pnd) throws SQLException {
         BeanPropertyRowMapper<T> rowMapper = new BeanPropertyRowMapper<>(clazz);
-        return jdbcTemplate.query(buildSelectSql(clazz, ""), rowMapper);
+        String where = null;
+        if (pnd != null){
+            where = pnd.getSql();
+        }
+            return jdbcTemplate.query(buildSelectSql(clazz, where), rowMapper);
     }
 
 }

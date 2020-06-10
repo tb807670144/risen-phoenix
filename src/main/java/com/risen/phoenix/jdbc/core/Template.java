@@ -1,64 +1,20 @@
 package com.risen.phoenix.jdbc.core;
 
-import com.google.common.base.CaseFormat;
 import com.risen.phoenix.jdbc.annotations.PhxField;
 import com.risen.phoenix.jdbc.annotations.PhxId;
 import com.risen.phoenix.jdbc.annotations.PhxTabName;
+import com.risen.phoenix.jdbc.core.pnd.Pnd;
+import com.risen.phoenix.jdbc.pojo.Product;
 import com.risen.phoenix.jdbc.table.PhoenixField;
 import com.risen.phoenix.jdbc.table.PhoenixTable;
 import org.apache.phoenix.util.QueryUtil;
 
 import java.lang.reflect.Field;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-/**
- * PhoenixJDBC的抽象类
- */
-public abstract class AbstractPhoenixJdbc {
-
-    /**
-     * 创建表
-     * @param sql 可执行SQL，增删改，建表均可
-     * @throws SQLException 异常
-     */
-    public abstract Integer createTable(String sql) throws SQLException;
-
-    /**
-     * 创建表
-     * @param clazz 源类
-     * @throws SQLException 异常
-     */
-    public abstract Integer createTable(Class<?> clazz) throws SQLException;
-
-    /**
-     * 插入语句
-     * @param t 类 extends BasePhoenix
-     * @throws SQLException 异常
-     */
-    public abstract <T> int save(T t) throws SQLException;
-
-    /**
-     * 批量插入数据
-     * @param list 集合
-     * @return 插入数量
-     * @throws SQLException
-     */
-    public abstract <T> int batchSave(List<T> list) throws SQLException;
-
-    public abstract void delete() throws SQLException;
-
-    public abstract void update() throws SQLException;
-
-    /**
-     * 查询语句
-     * @param clazz 类
-     * @throws SQLException 异常
-     */
-    public abstract <T> List<T> select(Class<T> clazz) throws SQLException;
+public class Template extends AbstractPhoenix {
 
     /**
      * 构建建表语句
@@ -172,7 +128,6 @@ public abstract class AbstractPhoenixJdbc {
         return insert.toString();
     }
 
-
     /**
      * 构建主键语句
      * @param str 字段名称集合
@@ -183,31 +138,12 @@ public abstract class AbstractPhoenixJdbc {
     }
 
     /**
-     * 驼峰式命名，下划线风格并大写
-     * createTime 转 CREATE_TIME
-     * @param str createTime
-     * @return CREATE_TIME
-     */
-    protected static String lowerCamel(String str){
-        return CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, str).toUpperCase();
-    }
-
-    /**
-     * 驼峰式命名，转java风格
-     * CREATE_TIME 转 createTime
-     * @param str CREATE_TIME
-     * @return createTime
-     */
-    protected static String camelLower(String str){
-        return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, str);
-    }
-
-    /**
      * 查询条件
      * @return
      */
-    protected <T> String buildSelectSql(Class<T> clazz, String where){
+    public <T> String buildSelectSql(T t, String where){
         String tableName, schem;
+        Class<?> clazz = t.getClass();
         boolean bar1 = clazz.isAnnotationPresent(PhxTabName.class);
         if (bar1) {
             PhxTabName annotation = clazz.getAnnotation(PhxTabName.class);
@@ -237,28 +173,19 @@ public abstract class AbstractPhoenixJdbc {
         return QueryUtil.constructSelectStatement(tableName, strList, where, null, false);
     }
 
-    /**
-     * 传输的值处理
-     * @param type java类型
-     * @param data 数据值
-     * @param flat 返回时追加的字符串
-     */
-    protected Object commaNorm(String type, Object data, String flat){
-        if (data == null){
-            return data;
-        }
-        switch (type){
-            case "String":
-                return String.format("'%s'%s", data, flat);
-            case "Date":
-                Date date = (Date) data;
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                String format = dateFormat.format(date);
-                return String.format("TO_DATE('%s')%s", format, flat);
-            default:
-                return data + flat;
-
-        }
+    public static void main(String[] args) {
+        Product pro = new Product();
+        pro.setUuid(50L);
+        pro.setProductBoole(true);
+        pro.setGmtCreate(new Date());
+        pro.setProductName("番茄一号");
+        pro.setProductFloat(1.3f);
+        Pnd<Product> pnd = new Pnd<>(pro);
+        pnd.andEquals("uuid", "99999");
+        pnd.andNotEquals("productName");
+        Template template = new Template();
+        String s = template.buildSelectSql(pro, pnd.getSql());
+        System.out.println(s);
     }
 
 }

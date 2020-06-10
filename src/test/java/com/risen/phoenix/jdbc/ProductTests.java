@@ -13,7 +13,7 @@ public class ProductTests extends BaseTest {
 
     @Test
     void createTable() throws SQLException {
-        phoenixService.createTable(Product.class);
+        phoenixServiceImpl.createTable(Product.class);
     }
 
     @Test
@@ -33,7 +33,7 @@ public class ProductTests extends BaseTest {
             list.add(kingAnimal);
         }
 
-        int i = phoenixService.batchSave(list);
+        int i = phoenixServiceImpl.batchSave(list);
         System.out.println("成功执行数据：" + i + "条");
     }
 

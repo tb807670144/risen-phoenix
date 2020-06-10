@@ -4,11 +4,8 @@ import com.google.common.base.CaseFormat;
 import com.risen.phoenix.jdbc.annotations.PhxField;
 import com.risen.phoenix.jdbc.annotations.PhxId;
 import com.risen.phoenix.jdbc.annotations.PhxTabName;
+import com.risen.phoenix.jdbc.core.Template;
 import com.risen.phoenix.jdbc.core.enums.PhxDataTypeEnum;
-import com.risen.phoenix.jdbc.core.pnd.ISqlExp;
-import com.risen.phoenix.jdbc.core.pnd.PhoenixUtils;
-import com.risen.phoenix.jdbc.core.pnd.Pnd;
-import com.risen.phoenix.jdbc.core.pnd.SimpleSqlExp;
 import com.risen.phoenix.jdbc.pojo.Apple;
 import com.risen.phoenix.jdbc.pojo.Product;
 import com.risen.phoenix.jdbc.pojo.Student;
@@ -19,12 +16,11 @@ import org.apache.phoenix.util.ColumnInfo;
 import org.apache.phoenix.util.QueryUtil;
 
 import java.lang.reflect.Field;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class TestClass {
+public class TestClass extends Template{
 
     /**
      * 反射获取【字段名称】和【字段值】
@@ -157,41 +153,6 @@ public class TestClass {
         return selCloum.substring(0, selCloum.length() - 1);
     }
 
-    public static <T> String buildSelectSql(Class<T> clazz, String where) {
-        String tableName, schem;
-        boolean bar1 = clazz.isAnnotationPresent(PhxTabName.class);
-        if (bar1) {
-            PhxTabName annotation = clazz.getAnnotation(PhxTabName.class);
-            schem = annotation.schem();
-            if (!schem.endsWith(".")) {
-                schem = schem + ".";
-            }
-            tableName = schem + annotation.tableName();
-        } else {
-            tableName = "RISEN." + lowerCamel(clazz.getSimpleName());
-        }
-
-        List<String> strList = new ArrayList<>();
-        Field[] fields = clazz.getDeclaredFields();
-        for (Field field : fields) {
-            boolean bar2 = field.isAnnotationPresent(PhxId.class);
-            if (bar2) {
-                strList.add(lowerCamel(field.getName()));
-                continue;
-            }
-            boolean bar3 = field.isAnnotationPresent(PhxField.class);
-            if (bar3) {
-                strList.add(lowerCamel(field.getName()));
-            }
-        }
-
-        return QueryUtil.constructSelectStatement(tableName, strList, where, null, false);
-    }
-
-    private static String lowerCamel(String str) {
-        return CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, str).toUpperCase();
-    }
-
     /**
      * @return
      */
@@ -228,9 +189,18 @@ public class TestClass {
         System.out.println(CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, "testData"));
     }
 
-    public static void main(String[] args) throws Exception{
-
+    public static void method8(){
         Product pro = new Product();
+        pro.setUuid(50L);
+        pro.setProductBoole(true);
+        pro.setGmtCreate(new Date());
+        pro.setProductName("番茄一号");
+        pro.setProductFloat(1.3f);
+    }
+
+    public static void main(String[] args){
+
+        /*Product pro = new Product();
         pro.setUuid(50L);
         pro.setProductBoole(true);
         pro.setGmtCreate(new Date());
@@ -242,16 +212,7 @@ public class TestClass {
         pnd.orLT("productName");
         pnd.orGTE("productFloat");
         pnd.orLTE("productFloat");
-
-        List<String> aaa = new ArrayList<>();
-        aaa.add("字符创1");
-        aaa.add("字符创2");
-        aaa.add("字符创3");
-        aaa.add("字符创4");
-
-
-
-        System.out.println(pnd.getSql());
+        System.out.println(pnd.getSql());*/
 
 
 

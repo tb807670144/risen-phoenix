@@ -2,7 +2,6 @@ package com.risen.phoenix.jdbc;
 
 import com.risen.phoenix.jdbc.pojo.Apple;
 import com.risen.phoenix.jdbc.pojo.KingAnimal;
-import com.risen.phoenix.jdbc.pojo.Student;
 import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
@@ -15,7 +14,7 @@ class RisenPhoenixApplicationTests extends BaseTest {
 
     @Test
     void createTable() throws SQLException {
-        phoenixService.createTable(KingAnimal.class);
+        phoenixServiceImpl.createTable(KingAnimal.class);
     }
 
     @Test
@@ -35,7 +34,7 @@ class RisenPhoenixApplicationTests extends BaseTest {
         apple2.setName("大姐头");
         list.add(apple);
         list.add(apple2);
-        phoenixService.save(apple2);
+        phoenixServiceImpl.save(apple2);
     }
 
     @Test
@@ -49,17 +48,17 @@ class RisenPhoenixApplicationTests extends BaseTest {
             list.add(kingAnimal);
         }
 
-        int i = phoenixService.batchSave(list);
+        int i = phoenixServiceImpl.batchSave(list);
         System.out.println("成功执行数据：" + i + "条");
     }
 
     @Test
     void select() throws SQLException {
 
-        List<Apple> select = phoenixService.select(Apple.class);
+        /*List<Apple> select = phoenixServiceImpl.select(Apple.class);
         for (Apple apple1 : select) {
             System.out.println(apple1.toString());
-        }
+        }*/
     }
 
 
