@@ -117,7 +117,7 @@ public abstract class AbstractPhoenixJdbc {
             if (bar2){
                 try {
                     field.setAccessible(true);
-                    Object result = commaNorm(field.getType().getName(), field.get(t), ",");
+                    Object result = commaNorm(field.getType().getSimpleName(), field.get(t), ",");
                     if (result != null){
                         fieldSql.append(lowerCamel(field.getName())).append(",");
                         valueSql.append(result);
@@ -131,7 +131,7 @@ public abstract class AbstractPhoenixJdbc {
             if (bar3){
                 try {
                     field.setAccessible(true);
-                    Object result = commaNorm(field.getType().getName(), field.get(t), ",");
+                    Object result = commaNorm(field.getType().getSimpleName(), field.get(t), ",");
                     if (result != null){
                         fieldSql.append(lowerCamel(field.getName())).append(",");
                         valueSql.append(result);
@@ -180,11 +180,22 @@ public abstract class AbstractPhoenixJdbc {
 
     /**
      * 驼峰式命名，下划线风格并大写
+     * createTime 转 CREATE_TIME
      * @param str createTime
      * @return CREATE_TIME
      */
-    protected String lowerCamel(String str){
+    protected static String lowerCamel(String str){
         return CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, str).toUpperCase();
+    }
+
+    /**
+     * 驼峰式命名，转java风格
+     * CREATE_TIME 转 createTime
+     * @param str CREATE_TIME
+     * @return createTime
+     */
+    protected static String camelLower(String str){
+        return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, str);
     }
 
     /**
@@ -233,9 +244,9 @@ public abstract class AbstractPhoenixJdbc {
             return data;
         }
         switch (type){
-            case "java.lang.String":
+            case "String":
                 return String.format("'%s'%s", data, flat);
-            case "java.util.Date":
+            case "Date":
                 Date date = (Date) data;
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 String format = dateFormat.format(date);
