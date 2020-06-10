@@ -21,26 +21,6 @@ public class Pnd<T> implements ISqlExp{
         this.setCndExps((List)(new ArrayList(4)));
     }
 
-    public Pnd(List<ISqlExp> cndExps, T t) {
-        this.t = t;
-        this.where = false;
-        this.setCndExps(cndExps);
-    }
-
-    public Pnd(ISqlExp cndExp, T t) {
-        this(t);
-        if (cndExp instanceof Pnd) {
-            Pnd cnd = (Pnd)cndExp;
-            this.cndExps = cnd.cndExps;
-            this.orderBys = cnd.orderBys;
-            this.orderBySet = cnd.orderBySet;
-            this.where = cnd.where;
-        } else {
-            this.append(cndExp);
-        }
-
-    }
-
     public Pnd append(ISqlExp cndExp) {
         if (cndExp instanceof Pnd) {
             Pnd cnd = (Pnd)cndExp;
@@ -104,7 +84,8 @@ public class Pnd<T> implements ISqlExp{
             colName = PhoenixUtils.mapperColName(colName);
         }
 
-        propName = result(colName);
+        propName = result(colName, propName);
+
         if (!this.isEmpty()) {
             this.append((ISqlExp)OP.AND);
         }
@@ -112,48 +93,48 @@ public class Pnd<T> implements ISqlExp{
         return this.append(colName, op.getSql(), propName);
     }
 
-    public Pnd andEquals(String propName) {
-        return this.andEquals((String)null, propName);
+    public Pnd andEquals(String colName) {
+        return this.andEquals(colName, (String)null);
     }
 
     public Pnd andEquals(String colName, String propName) {
         return this.AND(colName, OP.EQ, propName);
     }
 
-    public Pnd andNotEquals(String propName) {
-        return this.andNotEquals((String)null, propName);
+    public Pnd andNotEquals(String colName) {
+        return this.andNotEquals(colName, (String)null);
     }
 
     public Pnd andNotEquals(String colName, String propName) {
         return this.AND(colName, OP.NEQ, propName);
     }
 
-    public Pnd andGT(String propName) {
-        return this.andGT((String)null, propName);
+    public Pnd andGT(String colName) {
+        return this.andGT(colName, (String)null);
     }
 
     public Pnd andGT(String colName, String propName) {
         return this.AND(colName, OP.GT, propName);
     }
 
-    public Pnd andGTE(String propName) {
-        return this.andGTE((String)null, propName);
+    public Pnd andGTE(String colName) {
+        return this.andGTE(colName, (String)null);
     }
 
     public Pnd andGTE(String colName, String propName) {
         return this.AND(colName, OP.GTE, propName);
     }
 
-    public Pnd andLT(String propName) {
-        return this.andLT((String)null, propName);
+    public Pnd andLT(String colName) {
+        return this.andLT(colName, (String)null);
     }
 
     public Pnd andLT(String colName, String propName) {
         return this.AND(colName, OP.LT, propName);
     }
 
-    public Pnd andLTE(String propName) {
-        return this.andLTE((String)null, propName);
+    public Pnd andLTE(String colName) {
+        return this.andLTE(colName, (String)null);
     }
 
     public Pnd andLTE(String colName, String propName) {
@@ -174,12 +155,11 @@ public class Pnd<T> implements ISqlExp{
         return list.size() == 0 ? this.append("1=0") : this.append(propName);
     }
 
-    public Pnd andIn(String propName, String listName, Collection<?> list) {
-        return this.andIn((String)null, propName, listName, list);
+    public Pnd andIn(String colName, String listName, Collection<?> list) {
+        return this.andIn(colName, (String)null, listName, list);
     }
 
     public Pnd andIn(String colName, String propName, String listName, Collection<?> list) {
-        colName = (String)PhoenixUtils.getValue(colName, PhoenixUtils.mapperColName(propName));
         propName = expandIn(listName, list);
         if (!this.getCndExps().isEmpty()) {
             this.append((ISqlExp)OP.AND);
@@ -202,44 +182,19 @@ public class Pnd<T> implements ISqlExp{
         return list.size() == 0 ? this.append("1=0") : this.append(colName, OP.NIN.toString(), propName);
     }
 
-    public Pnd andLike(String propName) {
-        return this.andLike((String)null, propName);
+    public Pnd andLike(String colName) {
+        return this.andLike(colName, (String)null);
     }
 
     public Pnd andLike(String colName, String propName) {
         return this.AND(colName, OP.LIKE, propName);
     }
 
-    public Pnd andLike(String propName, boolean useUpper) {
-        return this.andLike((String)null, propName, useUpper);
-    }
-
-    public Pnd andLike(String colName, String propName, boolean useUpper) {
-        colName = (String)PhoenixUtils.getValue(colName, PhoenixUtils.mapperColName(propName));
-        if (useUpper) {
-            colName = "UPPER(" + colName + ")";
-        } else {
-            colName = "LOWER(" + colName + ")";
-        }
-
-        return this.AND(colName, OP.LIKE, propName);
-    }
-
     public Pnd andNotLike(String propName) {
-        return this.andNotLike((String)null, propName);
+        return this.andNotLike(propName, (String)null);
     }
 
     public Pnd andNotLike(String colName, String propName) {
-        return this.AND(colName, OP.NLIKE, propName);
-    }
-
-    public Pnd andNotLike(String propName, boolean useUpper) {
-        return this.andNotLike((String)null, propName, useUpper);
-    }
-
-    public Pnd andNotLike(String colName, String propName, boolean useUpper) {
-        colName = (String)PhoenixUtils.getValue(colName, PhoenixUtils.mapperColName(propName));
-        colName = "UPPER(" + colName + ")";
         return this.AND(colName, OP.NLIKE, propName);
     }
 
@@ -254,6 +209,7 @@ public class Pnd<T> implements ISqlExp{
     }
 
     public Pnd andColNull(String colName) {
+        colName = CaseUtils.lowerCamel(colName);
         return this.AND(new SimpleSqlExp(colName + " IS NULL"));
     }
 
@@ -268,20 +224,12 @@ public class Pnd<T> implements ISqlExp{
     }
 
     public Pnd andColNotNull(String colName) {
+        colName = CaseUtils.lowerCamel(colName);
         return this.AND(new SimpleSqlExp(colName + " IS NOT NULL"));
     }
 
     public Pnd OR(String colName, OP op, String propName) {
-        if (!StringUtils.hasText(colName)) {
-            colName = propName;
-            if (propName.lastIndexOf(".") > 0) {
-                colName = propName.substring(propName.lastIndexOf(".") + 1);
-            }
-
-            colName = PhoenixUtils.mapperColName(colName);
-        }
-
-        propName = result(colName);
+        propName = result(colName, propName);
         if (!this.getCndExps().isEmpty()) {
             this.append((ISqlExp)OP.OR);
         }
@@ -313,32 +261,32 @@ public class Pnd<T> implements ISqlExp{
         return this.OR(colName, OP.NEQ, propName);
     }
 
-    public Pnd orGT(String propName) {
-        return this.orGT((String)null, propName);
+    public Pnd orGT(String colName) {
+        return this.orGT(colName, (String)null);
     }
 
     public Pnd orGT(String colName, String propName) {
         return this.OR(colName, OP.GT, propName);
     }
 
-    public Pnd orGTE(String propName) {
-        return this.orGTE((String)null, propName);
+    public Pnd orGTE(String colName) {
+        return this.orGTE(colName, (String)null);
     }
 
     public Pnd orGTE(String colName, String propName) {
         return this.OR(colName, OP.GTE, propName);
     }
 
-    public Pnd orLT(String propName) {
-        return this.orLT((String)null, propName);
+    public Pnd orLT(String colName) {
+        return this.orLT(colName, (String)null);
     }
 
     public Pnd orLT(String colName, String propName) {
         return this.OR(colName, OP.LT, propName);
     }
 
-    public Pnd orLTE(String propName) {
-        return this.orLTE((String)null, propName);
+    public Pnd orLTE(String colName) {
+        return this.orLTE(colName, (String)null);
     }
 
     public Pnd orLTE(String colName, String propName) {
@@ -674,6 +622,9 @@ public class Pnd<T> implements ISqlExp{
     }
 
     private String result(String colName){
+        return result(colName, null);
+    }
+    private String result(String colName, String propName){
         colName = colName.toUpperCase();
         Class<?> aClass = t.getClass();
         Field[] fields = aClass.getDeclaredFields();
@@ -684,9 +635,12 @@ public class Pnd<T> implements ISqlExp{
                 String fina2 = field.getName();
                 if (colName.equals(fina2.toUpperCase()) || colName.equals(CaseUtils.lowerCamel(fina2).toUpperCase())) {
                     field.setAccessible(true);
-                    String s = null;
                     try {
-                        return CaseUtils.commaNorm(field.getType().getSimpleName(), field.get(t), "");
+                        if (!StringUtils.hasText(propName)){
+                            return CaseUtils.commaNorm(field.getType().getSimpleName(), field.get(t), "");
+                        }else {
+                            return CaseUtils.commaNorm(field.getType().getSimpleName(), propName, "");
+                        }
                     } catch (IllegalAccessException e) {
                         e.printStackTrace();
                         return null;

@@ -5,8 +5,10 @@ import com.risen.phoenix.jdbc.annotations.PhxField;
 import com.risen.phoenix.jdbc.annotations.PhxId;
 import com.risen.phoenix.jdbc.annotations.PhxTabName;
 import com.risen.phoenix.jdbc.core.enums.PhxDataTypeEnum;
+import com.risen.phoenix.jdbc.core.pnd.ISqlExp;
 import com.risen.phoenix.jdbc.core.pnd.PhoenixUtils;
 import com.risen.phoenix.jdbc.core.pnd.Pnd;
+import com.risen.phoenix.jdbc.core.pnd.SimpleSqlExp;
 import com.risen.phoenix.jdbc.pojo.Apple;
 import com.risen.phoenix.jdbc.pojo.Product;
 import com.risen.phoenix.jdbc.pojo.Student;
@@ -227,18 +229,31 @@ public class TestClass {
     }
 
     public static void main(String[] args) throws Exception{
-        Student student = new Student();
-        student.setName("大黄");
-        student.setUserType("88vip");
 
-        Pnd pnd = new Pnd(student);
-        pnd.andEquals("name").andEquals("userType");
+        Product pro = new Product();
+        pro.setUuid(50L);
+        pro.setProductBoole(true);
+        pro.setGmtCreate(new Date());
+        pro.setProductName("番茄一号");
+        pro.setProductFloat(1.3f);
+
+        Pnd pnd = new Pnd(pro);
+        pnd.orGT("productName");
+        pnd.orLT("productName");
+        pnd.orGTE("productFloat");
+        pnd.orLTE("productFloat");
+
+        List<String> aaa = new ArrayList<>();
+        aaa.add("字符创1");
+        aaa.add("字符创2");
+        aaa.add("字符创3");
+        aaa.add("字符创4");
+
+
+
         System.out.println(pnd.getSql());
 
 
 
-//        System.out.println(method6("usertype", student));
-//        method7();
-//        System.out.println(CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, "ProductName"));
     }
 }

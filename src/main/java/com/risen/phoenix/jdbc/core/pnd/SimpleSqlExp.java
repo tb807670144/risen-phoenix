@@ -1,5 +1,6 @@
 package com.risen.phoenix.jdbc.core.pnd;
 
+import com.risen.phoenix.jdbc.util.CaseUtils;
 import org.springframework.util.StringUtils;
 
 public class SimpleSqlExp implements ISqlExp {
@@ -11,6 +12,9 @@ public class SimpleSqlExp implements ISqlExp {
     }
 
     public SimpleSqlExp(String... snippets) {
+        if (snippets.length > 2){
+            snippets[0] = CaseUtils.lowerCamel(snippets[0]);
+        }
         this.snippet = StringUtils.arrayToDelimitedString(snippets, " ");
     }
 
