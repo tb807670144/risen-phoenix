@@ -246,15 +246,15 @@ public class Pnd<T> implements ISqlExp{
     }
 
     public Pnd orEquals(String propName) {
-        return this.orEquals((String)null, propName);
+        return this.orEquals(propName, (String)null);
     }
 
     public Pnd orEquals(String colName, String propName) {
         return this.OR(colName, OP.EQ, propName);
     }
 
-    public Pnd orNotEquals(String propName) {
-        return this.orNotEquals((String)null, propName);
+    public Pnd orNotEquals(String colName) {
+        return this.orNotEquals(colName, (String)null);
     }
 
     public Pnd orNotEquals(String colName, String propName) {
@@ -343,21 +343,11 @@ public class Pnd<T> implements ISqlExp{
         return this.append(colName, OP.NIN.toString(), propName);
     }
 
-    public Pnd orLike(String propName) {
-        return this.orLike((String)null, propName);
+    public Pnd orLike(String colName) {
+        return this.orLike(colName, (String)null);
     }
 
     public Pnd orLike(String colName, String propName) {
-        return this.OR(colName, OP.LIKE, propName);
-    }
-
-    public Pnd orLike(String propName, boolean useUpper) {
-        return this.orLike((String)null, propName, useUpper);
-    }
-
-    public Pnd orLike(String colName, String propName, boolean useUpper) {
-        colName = (String)PhoenixUtils.getValue(colName, PhoenixUtils.mapperColName(propName));
-        colName = "UPPER(" + colName + ")";
         return this.OR(colName, OP.LIKE, propName);
     }
 
