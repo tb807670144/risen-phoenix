@@ -54,7 +54,8 @@ public class PhoenixService extends AbstractPhoenixJdbc{
     @Override
     public Integer createTable(Class<?> clazz) throws SQLException{
         String tableName = null, schem = null;
-        boolean bar1 = clazz.isAnnotationPresent(PhxTabName.class);
+        int salt = 3;
+        boolean bar1 = clazz.isAnnotationPresent(PhxTabName.class), compression = false;
         if (bar1){
             PhxTabName an1 = clazz.getAnnotation(PhxTabName.class);
             if (an1.upLower()){
@@ -64,6 +65,8 @@ public class PhoenixService extends AbstractPhoenixJdbc{
                 tableName = lowerCamel(tableName);
                 schem = "".equals(an1.schem()) ? "RISEN" : an1.schem();
             }
+            salt=an1.salt();
+            compression=an1.compression();
         }else {
             tableName = lowerCamel(clazz.getSimpleName());
             schem = "RISEN";
@@ -93,7 +96,7 @@ public class PhoenixService extends AbstractPhoenixJdbc{
                 list.add(phoenixField);
             }
         }
-        PhoenixTable phoenixTable = new PhoenixTable(schem, tableName, list);
+        PhoenixTable phoenixTable = new PhoenixTable(schem, tableName, list, salt, compression);
         String sql = buildCreateSql(phoenixTable);
         return createTable(sql);
     }

@@ -18,20 +18,21 @@ public class PhoenixTable {
      * 字段映射信息
      */
     private List<PhoenixField> fields;
+    /**
+     * 加盐数
+     */
+    private int salt;
+    /**
+     * 是否压缩
+     */
+    private boolean compression;
 
-    public PhoenixTable(String tableName, List<PhoenixField> fields) {
-        this.schem = "RISEN.";
-        this.tableName = tableName;
-        this.fields = fields;
-    }
-
-    public PhoenixTable(String schem, String tableName, List<PhoenixField> fields) {
-        if (!schem.endsWith(".")){
-            schem = schem + ".";
-        }
+    public PhoenixTable(String schem, String tableName, List<PhoenixField> fields, int salt, boolean compression) {
         this.schem = schem;
         this.tableName = tableName;
         this.fields = fields;
+        this.salt = salt;
+        this.compression = compression;
     }
 
     public String getSchem() {
@@ -56,5 +57,21 @@ public class PhoenixTable {
 
     public void setFields(List<PhoenixField> fields) {
         this.fields = fields;
+    }
+
+    public int getSalt() {
+        return salt;
+    }
+
+    public void setSalt(int salt) {
+        this.salt = salt;
+    }
+
+    public boolean isCompression() {
+        return compression;
+    }
+
+    public void setCompression(boolean compression) {
+        this.compression = compression;
     }
 }

@@ -87,6 +87,10 @@ public abstract class AbstractPhoenixJdbc {
             sql.append(buildPrimaryKeySql(str));
         }
         sql.append(")");
+        if (tab.isCompression()){
+            sql.append(" COMPRESSION = 'GZ', ");
+        }
+        sql.append("  SALT_BUCKETS = ").append(tab.getSalt());
         return sql.toString();
     }
 
