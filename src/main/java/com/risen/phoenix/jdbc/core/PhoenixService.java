@@ -72,6 +72,10 @@ public class PhoenixService extends AbstractPhoenixJdbc{
             schem = "RISEN";
         }
 
+        if (!schem.endsWith(".")){
+            schem = schem + ".";
+        }
+
         List<PhoenixField> list = new ArrayList<>();
         Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
@@ -98,6 +102,7 @@ public class PhoenixService extends AbstractPhoenixJdbc{
         }
         PhoenixTable phoenixTable = new PhoenixTable(schem, tableName, list, salt, compression);
         String sql = buildCreateSql(phoenixTable);
+        System.out.println(sql);
         return createTable(sql);
     }
 
