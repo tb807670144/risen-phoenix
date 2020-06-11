@@ -119,4 +119,20 @@ public class Product {
     public void setProductShort(Short productShort) {
         this.productShort = productShort;
     }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "uuid=" + uuid +
+                ", productUnLong=" + productUnLong +
+                ", productName='" + productName + '\'' +
+                ", productEmail='" + productEmail + '\'' +
+                ", gmtCreate=" + gmtCreate +
+                ", gmtModify=" + gmtModify +
+                ", productFloat=" + productFloat +
+                ", productDouble=" + productDouble +
+                ", productBoole=" + productBoole +
+                ", productShort=" + productShort +
+                '}';
+    }
 }

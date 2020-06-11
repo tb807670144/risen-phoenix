@@ -6,6 +6,9 @@ import com.risen.phoenix.jdbc.annotations.PhxId;
 import com.risen.phoenix.jdbc.annotations.PhxTabName;
 import com.risen.phoenix.jdbc.core.Template;
 import com.risen.phoenix.jdbc.core.enums.PhxDataTypeEnum;
+import com.risen.phoenix.jdbc.core.pnd.ISqlExp;
+import com.risen.phoenix.jdbc.core.pnd.Pnd;
+import com.risen.phoenix.jdbc.core.pnd.SimpleSqlExp;
 import com.risen.phoenix.jdbc.pojo.Apple;
 import com.risen.phoenix.jdbc.pojo.Product;
 import com.risen.phoenix.jdbc.pojo.Student;
@@ -19,6 +22,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 public class TestClass extends Template{
 
@@ -199,22 +203,30 @@ public class TestClass extends Template{
     }
 
     public static void main(String[] args){
+        UUID uuid = UUID.randomUUID();
+        String s = uuid.toString().replaceAll("-", "");
+        System.out.println(s.length());
 
-        /*Product pro = new Product();
+        Product pro = new Product();
         pro.setUuid(50L);
         pro.setProductBoole(true);
         pro.setGmtCreate(new Date());
         pro.setProductName("番茄一号");
+        pro.setGmtCreate(new Date());
         pro.setProductFloat(1.3f);
 
+        List<Integer> list = new ArrayList<>();
+        list.add(1);
+        list.add(2);
+        list.add(5);
+
         Pnd pnd = new Pnd(pro);
-        pnd.orGT("productName");
-        pnd.orLT("productName");
-        pnd.orGTE("productFloat");
-        pnd.orLTE("productFloat");
-        System.out.println(pnd.getSql());*/
+        pnd.andEquals("productName");
+        pnd.andNotIn("productName", list);
+        pnd.andEquals("uuid");
 
 
+        System.out.println(pnd.getSql());
 
     }
 }

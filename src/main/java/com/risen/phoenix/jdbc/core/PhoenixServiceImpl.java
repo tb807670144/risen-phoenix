@@ -7,9 +7,9 @@ import com.risen.phoenix.jdbc.core.enums.PhxDataTypeEnum;
 import com.risen.phoenix.jdbc.core.pnd.Pnd;
 import com.risen.phoenix.jdbc.table.PhoenixField;
 import com.risen.phoenix.jdbc.table.PhoenixTable;
+import com.risen.phoenix.jdbc.util.CaseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 简化Phoenix
@@ -107,7 +108,7 @@ public class PhoenixServiceImpl extends Template implements IPhoenixService{
 
     @Transactional(rollbackFor = SQLException.class)
     @Override
-    public <T> int save(T t) throws SQLException{
+    public <T> int saveOrUpdate(T t) throws SQLException{
         String sql = buildInsertSql(t);
         return jdbcTemplate.update(sql);
     }
@@ -119,7 +120,6 @@ public class PhoenixServiceImpl extends Template implements IPhoenixService{
         int batchSize = 0, commitSize = 150, insertCount = 0;
         for (T t : list) {
             PreparedStatement statement = conn.prepareStatement(buildInsertSql(t));
-            System.out.println(buildInsertSql(t));
             statement.execute();
             batchSize++;
             if (batchSize % commitSize == 0){
@@ -133,23 +133,33 @@ public class PhoenixServiceImpl extends Template implements IPhoenixService{
     }
 
     @Override
-    public void delete() throws SQLException{
+    public void deleteById() throws SQLException{
+
+
 
     }
 
     @Override
-    public void update() throws SQLException{
-
-    }
-
-    @Override
-    public <T> List<T> select(Class<T> clazz, Pnd<T> pnd) throws SQLException {
-        BeanPropertyRowMapper<T> rowMapper = new BeanPropertyRowMapper<>(clazz);
+    public <T> List<T> select(T t, Pnd<T> pnd) throws SQLException {
         String where = null;
         if (pnd != null){
             where = pnd.getSql();
         }
-            return jdbcTemplate.query(buildSelectSql(clazz, where), rowMapper);
+
+        List<Map<String, Object>> resultMap = jdbcTemplate.queryForList(buildSelectSql(t, where));
+        List<T> resultSet = new ArrayList<>(resultMap.size());
+        Object reflect = null;
+        for (Map<String, Object> stringObjectMap : resultMap) {
+            reflect = CaseUtils.reflect(t.getClass(), stringObjectMap);
+            resultSet.add((T)reflect);
+        }
+        reflect = null;
+        return resultSet;
+    }
+
+    @Override
+    public <T> List<T> selectAll(Class<T> clazz) throws SQLException {
+        return (List<T>)select(clazz, null);
     }
 
 }

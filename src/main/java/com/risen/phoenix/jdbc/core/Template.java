@@ -3,18 +3,16 @@ package com.risen.phoenix.jdbc.core;
 import com.risen.phoenix.jdbc.annotations.PhxField;
 import com.risen.phoenix.jdbc.annotations.PhxId;
 import com.risen.phoenix.jdbc.annotations.PhxTabName;
-import com.risen.phoenix.jdbc.core.pnd.Pnd;
-import com.risen.phoenix.jdbc.pojo.Product;
 import com.risen.phoenix.jdbc.table.PhoenixField;
 import com.risen.phoenix.jdbc.table.PhoenixTable;
 import org.apache.phoenix.util.QueryUtil;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
-public class Template extends AbstractPhoenix {
+public class Template extends BasePhoenix {
 
     /**
      * 构建建表语句
@@ -80,7 +78,12 @@ public class Template extends AbstractPhoenix {
                     Object result = commaNorm(field.getType().getSimpleName(), field.get(t), ",");
                     if (result != null){
                         fieldSql.append(lowerCamel(field.getName())).append(",");
-                        valueSql.append(result);
+                        if ("String".equals(field.getType().getSimpleName())){
+                            valueSql.append(UUID.randomUUID());
+                        }else {
+                            valueSql.append(result);
+
+                        }
                     }
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
@@ -171,21 +174,6 @@ public class Template extends AbstractPhoenix {
         }
 
         return QueryUtil.constructSelectStatement(tableName, strList, where, null, false);
-    }
-
-    public static void main(String[] args) {
-        Product pro = new Product();
-        pro.setUuid(50L);
-        pro.setProductBoole(true);
-        pro.setGmtCreate(new Date());
-        pro.setProductName("番茄一号");
-        pro.setProductFloat(1.3f);
-        Pnd<Product> pnd = new Pnd<>(pro);
-        pnd.andEquals("uuid", "99999");
-        pnd.andNotEquals("productName");
-        Template template = new Template();
-        String s = template.buildSelectSql(pro, pnd.getSql());
-        System.out.println(s);
     }
 
 }

@@ -1,5 +1,6 @@
 package com.risen.phoenix.jdbc;
 
+import com.risen.phoenix.jdbc.core.IPhoenixService;
 import com.risen.phoenix.jdbc.core.PhoenixServiceImpl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +16,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 public class BaseTest {
 
     @Autowired
-    PhoenixServiceImpl phoenixServiceImpl;
+    IPhoenixService phoenixService;
 
     @BeforeEach
     public void before(){

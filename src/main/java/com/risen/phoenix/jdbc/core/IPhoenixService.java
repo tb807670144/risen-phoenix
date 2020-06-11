@@ -26,7 +26,7 @@ public interface IPhoenixService {
      * @param t 类 extends BasePhoenix
      * @throws SQLException 异常
      */
-    <T> int save(T t) throws SQLException;
+    <T> int saveOrUpdate(T t) throws SQLException;
 
     /**
      * 批量插入数据
@@ -36,14 +36,28 @@ public interface IPhoenixService {
      */
     <T> int batchSave(List<T> list) throws SQLException;
 
-    void delete() throws SQLException;
 
-    void update() throws SQLException;
+    /**
+     * 根据ID删除
+     * @throws SQLException 异常信息
+     */
+    void deleteById() throws SQLException;
 
     /**
      * 查询语句
-     * @param clazz 类
+     * @param t 类
      * @throws SQLException 异常
      */
-    <T> List<T> select(Class<T> clazz, Pnd<T> pnd) throws SQLException;
+    <T> List<T> select(T t, Pnd<T> pnd) throws SQLException;
+
+
+    /**
+     *
+     * @param clazz 要操作的类
+     * @param <T> 类
+     * @return
+     * @throws SQLException
+     */
+    <T> List<T> selectAll(Class<T> clazz) throws SQLException;
+
 }

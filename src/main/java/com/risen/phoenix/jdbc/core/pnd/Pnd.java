@@ -155,31 +155,20 @@ public class Pnd<T> implements ISqlExp{
         return list.size() == 0 ? this.append("1=0") : this.append(propName);
     }
 
-    public Pnd andIn(String colName, String listName, Collection<?> list) {
-        return this.andIn(colName, (String)null, listName, list);
-    }
-
-    public Pnd andIn(String colName, String propName, String listName, Collection<?> list) {
-        propName = expandIn(listName, list);
+    public Pnd andIn(String colName, Collection<?> list) {
         if (!this.getCndExps().isEmpty()) {
             this.append((ISqlExp)OP.AND);
         }
 
-        return list.size() == 0 ? this.append("1=0") : this.append(colName, OP.IN.toString(), propName);
+        return list.size() == 0 ? this.append("1=0") : this.append(colName, OP.IN.toString(), expandIn(list));
     }
 
-    public Pnd andNotIn(String propName, String listName, Collection<?> list) {
-        return this.andNotIn((String)null, propName, listName, list);
-    }
-
-    public Pnd andNotIn(String colName, String propName, String listName, Collection<?> list) {
-        colName = (String)PhoenixUtils.getValue(colName, PhoenixUtils.mapperColName(propName));
-        propName = expandIn(listName, list);
+    public Pnd andNotIn(String colName, Collection<?> list) {
         if (!this.getCndExps().isEmpty()) {
             this.append((ISqlExp)OP.AND);
         }
 
-        return list.size() == 0 ? this.append("1=0") : this.append(colName, OP.NIN.toString(), propName);
+        return list.size() == 0 ? this.append("1=0") : this.append(colName, OP.NIN.toString(), expandIn(list));
     }
 
     public Pnd andLike(String colName) {
@@ -317,7 +306,7 @@ public class Pnd<T> implements ISqlExp{
 
     public Pnd orIn(String colName, String propName, String listName, Collection<?> list) {
         colName = (String)PhoenixUtils.getValue(colName, PhoenixUtils.mapperColName(propName));
-        propName = expandIn(listName, list);
+        propName = expandIn(list);
         if (list.size() == 0) {
             return this;
         } else {
@@ -335,7 +324,7 @@ public class Pnd<T> implements ISqlExp{
 
     public Pnd orNotIn(String colName, String propName, String listName, Collection<?> list) {
         colName = (String)PhoenixUtils.getValue(colName, PhoenixUtils.mapperColName(propName));
-        propName = expandIn(listName, list);
+        propName = expandIn(list);
         if (!this.getCndExps().isEmpty()) {
             this.append((ISqlExp)OP.OR);
         }
@@ -430,6 +419,7 @@ public class Pnd<T> implements ISqlExp{
     }
 
     public Pnd orderBy(String colName, String order) {
+        colName = CaseUtils.lowerCamel(colName);
         if (!this.getOrderBySet().contains(colName)) {
             this.getOrderBys().add(new SimpleSqlExp(new String[]{colName, order}));
             this.getOrderBySet().add(colName);
@@ -455,22 +445,20 @@ public class Pnd<T> implements ISqlExp{
         return this;
     }
 
-    public static String expandIn(String listName, Collection<?> list) {
+    public static String expandIn(Collection<?> list) {
         StringBuilder builder = new StringBuilder("(");
         Iterator<?> iterator = list.iterator();
 
-        for(int i = 0; iterator.hasNext(); builder.append("}")) {
+        for(int i = 0; iterator.hasNext(); i++) {
             Object item = iterator.next();
+            if (item instanceof String){
+                item = "'" + item + "'";
+            }
             if (i != 0) {
                 builder.append(",");
             }
+            builder.append(item);
 
-            builder.append("#{").append(listName).append("[").append(i++).append("]");
-            if (item == null) {
-                builder.append(",javaType=").append("java.lang.Object");
-            } else {
-                builder.append(",javaType=").append(item.getClass().getName());
-            }
         }
 
         builder.append(")");
@@ -615,7 +603,6 @@ public class Pnd<T> implements ISqlExp{
         return result(colName, null);
     }
     private String result(String colName, String propName){
-        colName = colName.toUpperCase();
         Class<?> aClass = t.getClass();
         Field[] fields = aClass.getDeclaredFields();
         for (Field field : fields) {
@@ -623,7 +610,7 @@ public class Pnd<T> implements ISqlExp{
             boolean bar2 = field.isAnnotationPresent(PhxField.class);
             if (bar1 || bar2) {
                 String fina2 = field.getName();
-                if (colName.equals(fina2.toUpperCase()) || colName.equals(CaseUtils.lowerCamel(fina2).toUpperCase())) {
+                if (colName.equalsIgnoreCase(fina2) || colName.equalsIgnoreCase(CaseUtils.lowerCamel(fina2))) {
                     field.setAccessible(true);
                     try {
                         if (!StringUtils.hasText(propName)){

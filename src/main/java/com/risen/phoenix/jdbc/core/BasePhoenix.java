@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * PhoenixJDBC的抽象类
  */
-public abstract class AbstractPhoenix {
+public abstract class BasePhoenix {
 
     /**
      * 驼峰式命名，下划线风格并大写
