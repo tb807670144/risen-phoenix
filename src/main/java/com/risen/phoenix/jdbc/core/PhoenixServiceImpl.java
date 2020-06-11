@@ -50,7 +50,6 @@ public class PhoenixServiceImpl extends Template implements IPhoenixService{
      * @return Integer
      * @throws SQLException 异常信息
      */
-    @Transactional
     @Override
     public void createTable(Class<?> clazz) throws SQLException{
         String tableName = null, schem = null;
@@ -118,17 +117,22 @@ public class PhoenixServiceImpl extends Template implements IPhoenixService{
         Connection conn = jdbcTemplate.getDataSource().getConnection();
         conn.setAutoCommit(false);
         int batchSize = 0, commitSize = 150, insertCount = 0;
-        for (T t : list) {
-            PreparedStatement statement = conn.prepareStatement(buildInsertSql(t));
-            statement.execute();
-            batchSize++;
-            if (batchSize % commitSize == 0){
-                batchSize = 0;
-                conn.commit();
+        try {
+            for (T t : list) {
+                PreparedStatement statement = conn.prepareStatement(buildInsertSql(t));
+                statement.execute();
+                batchSize++;
+                if (batchSize % commitSize == 0){
+                    batchSize = 0;
+                    conn.commit();
+                }
+                insertCount++;
             }
-            insertCount++;
+            conn.commit();
+        } catch (SQLException e) {
+            conn.rollback();
+            e.printStackTrace();
         }
-        conn.commit();
         return insertCount;
     }
 
